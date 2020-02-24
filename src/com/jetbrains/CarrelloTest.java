@@ -1,6 +1,6 @@
 package com.jetbrains;
 
-import org.junit.Assert;
+//import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +39,7 @@ class CarrelloTest {
         assertNull(c.ricercaNelCarrello("5678"));
         assertNotNull(c.ricercaNelCarrello("1234"));
         String expected = "1234";
-        Assert.assertEquals("e' stato trovato l'articolo con seriale atteso", expected, c.ricercaNelCarrello("1234").getSeriale());
+        assertEquals("e' stato trovato l'articolo con seriale atteso", expected, c.ricercaNelCarrello("1234").getSeriale());
 
         //Articolo a = null;
 
@@ -59,7 +59,5 @@ class CarrelloTest {
 
     }
 
-    @Test
-    void modificaQArticolo() {
-    }
+
 }

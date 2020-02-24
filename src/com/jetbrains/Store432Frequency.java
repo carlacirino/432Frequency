@@ -19,25 +19,17 @@ public class Store432Frequency implements Serializable{
 
     private HashMap<Integer,Agevolazione> agevolazioni;
     Articolo articolo;
-
-    /*private final Amministratore admin = new Amministratore("admin", "admin");*/
+    
 
     public HashMap<Cliente, LinkedList<Ordine>> getOrdiniclienti() {
         return ordiniclienti;
     }
 
-    /*public void setOrdiniclienti(HashMap<Cliente, LinkedList<Ordine>> ordiniclienti) {
-        this.ordiniclienti = ordiniclienti;
-    }*/
+
 
     public HashMap<Fornitore, LinkedList<Ordine>> getOrdinifornitori() {
         return ordinifornitori;
     }
-
-    /*public void setOrdinifornitori(HashMap<Fornitore, LinkedList<Ordine>> ordinifornitori) {
-
-        this.ordinifornitori = ordinifornitori;
-    }*/
 
 
     private static Store432Frequency istance;
@@ -425,8 +417,6 @@ public class Store432Frequency implements Serializable{
                                         strumento.setPrezzo(p);
                                         break;
                                 }
-                                //getAnagrafica().getAnagrafica().put(seriale, strumento);
-                                //System.out.println("Modifica avvenuta con successo\n");
                             }
 
                         }
@@ -1142,12 +1132,29 @@ public class Store432Frequency implements Serializable{
         return returnAg;
     }
 
+    //INSERISCI LA NUOVA AGEVOLAZIONE NELLA STRUTTURA DATI
     public void InserisciAgevolazione(int k, Agevolazione ag ){
         if(RicercaAgbykey(k)==null){
             agevolazioni.put(k,ag);
         }
         else{
             System.out.println("Agevolazione già presente\n");
+        }
+    }
+
+    public void ModificaAgevolazione(int k) {
+        Scanner ag6 = new Scanner(System.in);
+        Scanner ag7 = new Scanner(System.in);
+        Agevolazione agmod = RicercaAgbykey(k);
+        getAgevolazioni().remove(k);
+        if (agmod != null) {
+            System.out.println("Modifica descrizione:\n");
+            String agdesc = ag7.nextLine();
+            agmod.setDescrizione(agdesc);
+            System.out.println("Modifica sconto:\n");
+            int agsconto = ag6.nextInt();
+            agmod.setSconto(agsconto);
+            InserisciAgevolazione(k, agmod);
         }
     }
 
@@ -1248,64 +1255,101 @@ public class Store432Frequency implements Serializable{
     }
 
     //devo cercare di spezzare questo metodo in metodi più piccoli
-
-    public Ordine effettuaOrdineFornitore(){
-        int uscita=-1;
-        String seriale;
-        int quantita;
-        Scanner i=new Scanner(System.in);
+    public Fornitore RicercaFornOrdine(String nomesoc) {
         Scanner in = new Scanner(System.in);
+        Fornitore f = new Fornitore();
+        f.setNomeSocieta(nomesoc);
+        if (RicercaFornByName(f).isEmpty()) {
+            System.out.println("Fornitore non trovato. Impossibile effettuare un ordine\n");
+
+        } else {
+            System.out.println(RicercaFornByName(f));
+            System.out.println("Inserisci la partita IVA del fornitore verso cui effettuare un ordine\n");
+            String scforn = in.nextLine();
+            f = RicercaFornByIva(scforn);
+        }
+        return f;
+    }
+
+    public Ordine creaOrdine(){
         Ordine ord = new Ordine();
-        do{
-            System.out.println("\n1)Inserisci articolo\n"+
-                    "0)Concludi ordine\n>");
-            uscita = i.nextInt();
-            switch (uscita){
-                case 0:
+        Random r = new Random();
+        Calendar cal = Calendar.getInstance();
+        String data = String.valueOf(cal.get(Calendar.DATE))+ "/"+ String.valueOf(cal.get(Calendar.MONTH)+1) + "/"+ String.valueOf(cal.get(Calendar.YEAR));
+        ord.setData(data);
+        ord.setId((r.nextInt(10000)));
+        return ord;
+    }
 
-                    Iterator it = ord.getArtOrd().entrySet().iterator();
-                    while(it.hasNext()){
-                        Map.Entry entry = (Map.Entry) it.next();
-                        Articolo a = (Articolo)entry.getKey();
-                        int q = (Integer)entry.getValue();
-                        if(magazzino.getMgz().containsKey(a)){
-                            Giacenza giac = magazzino.getMgz().get(a);
-                            giac.setGiacenza(giac.getGiacenza()+q);
-                            magazzino.getMgz().put(a,giac);
-                        }
-                        else{
-                            magazzino.CaricaMagazzino(a,q);
-                        }
+    public void AggiornaMagOrdineFornitore(Ordine ord){
+        Iterator it = ord.getArtOrd().entrySet().iterator();
 
-
-                    }
-                    Random r = new Random();
-                    Calendar cal = Calendar.getInstance();
-                    String data = String.valueOf(cal.get(Calendar.DATE))+ "/"+ String.valueOf(cal.get(Calendar.MONTH)+1) + "/"+ String.valueOf(cal.get(Calendar.YEAR));
-                    ord.setData(data);
-                    ord.setId((r.nextInt(10000)));
-                    break;
-
-                case 1:
-                    System.out.println(getAnagrafica().StampaArticoli());
-                    System.out.println("Inserisci il seriale dell'articolo da volere ordinare\n");
-                    seriale = in.nextLine();
-
-                    Articolo a = getAnagrafica().RicercaArticoloAna(seriale);
-                    if(a!=null){
-                        System.out.println("Inserisci la quantità da voler ordinare\n");
-                        quantita = i.nextInt();
-                        ord.getArtOrd().put(a,quantita);
-                        ord.setTotale(ord.getTotale()+quantita*a.getPrezzo());
-                    }
-                    else{
-                        System.out.println("Seriale non trovato\n");
-                    }
-                    break;
+        while(it.hasNext()){
+            Map.Entry entry = (Map.Entry) it.next();
+            Articolo a = (Articolo)entry.getKey();
+            int q = (Integer)entry.getValue();
+            if(magazzino.getMgz().containsKey(a)){
+                Giacenza giac = magazzino.getMgz().get(a);
+                giac.setGiacenza(giac.getGiacenza()+q);
+                magazzino.getMgz().put(a,giac);
+            }
+            else{
+                magazzino.CaricaMagazzino(a,q);
             }
 
-        }while(uscita!=0);
+        }
+
+    }
+
+    public void ConcludiOrdine(Ordine ord, Fornitore f) {
+
+        if (ord.getArtOrd().isEmpty()) {
+            System.out.println("\nPer effettuare l'ordine bisogna inserire almeno un articolo\n");
+        } else {
+            LinkedList<Ordine> listord = getOrdinifornitori().get(f);
+            listord.add(ord);
+            getOrdinifornitori().put(f, listord);
+            System.out.println("\nOrdine effettuato con successo\n");
+        }
+        AggiornaMagOrdineFornitore(ord);
+    }
+
+    public Ordine inserisciArtOrdine(Ordine ord){
+        System.out.println(getAnagrafica().StampaArticoli());
+        System.out.println("Inserisci il seriale dell'articolo da volere ordinare\n");
+        Scanner in = new Scanner(System.in);
+        String seriale = in.nextLine();
+        Scanner i = new Scanner(System.in);
+        int quantita;
+
+        Articolo a = getAnagrafica().RicercaArticoloAna(seriale);
+        if(a!=null){
+            System.out.println("Inserisci la quantità da voler ordinare\n");
+            quantita = i.nextInt();
+            ord.getArtOrd().put(a,quantita);
+            ord.setTotale(ord.getTotale()+quantita*a.getPrezzo());
+        }
+        else{
+            System.out.println("Seriale non trovato\n");
+        }
         return ord;
+    }
+
+
+    public void concludiOrdineCliente(String scliente, String pcliente){
+        LinkedList<Ordine> listord;
+        RicercaClientebynamepw(scliente,pcliente).getCarrello().setTotale(calcolaTotaleScontato(scliente,pcliente));
+        Ordine ordine = effettuaOrdineCliente(RicercaClientebynamepw(scliente,pcliente).getCarrello(), getMagazzino());
+        if (ordine.getArtOrd().isEmpty()) {
+            System.out.println("\nGli articoli nel tuo carrello non sono disponibili per effettuare l'ordine\n");
+        } else {
+            listord = getOrdiniclienti().get(RicercaClientebynamepw(scliente,pcliente));
+            listord.add(ordine);
+            getOrdiniclienti().put(RicercaClientebynamepw(scliente,pcliente), listord);
+            System.out.println("Il tuo ordine è stato effettuato\n");
+            RicercaClientebynamepw(scliente,pcliente).getCarrello().setTotale(0);
+
+        }
     }
 
     public Ordine effettuaOrdineCliente(Carrello cart, Magazzino mag ){
@@ -1318,6 +1362,11 @@ public class Store432Frequency implements Serializable{
             Integer q= (Integer)entry.getValue();
             if(mag.getMgz().get(a).getGiacenza()>q){
                 //ord.setTotale(ord.getTotale()+a.getPrezzo()*q);
+                Random r = new Random();
+                Calendar cal = Calendar.getInstance();
+                String data = String.valueOf(cal.get(Calendar.DATE)) + "/" +String.valueOf(cal.get(Calendar.MONTH) + 1) + "/" + String.valueOf(cal.get(Calendar.YEAR));
+                ord.setData(data);
+                ord.setId(r.nextInt(10000));
                 ord.setTotale(ord.getTotale()+cart.getTotale());
                 mag.getMgz().get(a).setGiacenza(mag.getMgz().get(a).getGiacenza()-q);
                 ord.getArtOrd().put(a,q);
@@ -1333,13 +1382,27 @@ public class Store432Frequency implements Serializable{
     return ord;
     }
 
-    public void StoricoOrdini(){
+    public double calcolaTotaleScontato(String u, String p){
+        int sconto = getAgevolazioni().get(RicercaClientebynamepw(u,p).getId()).getSconto();
+        double prezzo_agevolato = RicercaClientebynamepw(u,p).getCarrello().getTotale()-RicercaClientebynamepw(u,p).getCarrello().getTotale()*sconto/100;
+        return prezzo_agevolato;
+    }
+
+    public void VisualizzaOrdini(String u, String p){
+        if (getOrdiniclienti().get(RicercaClientebynamepw(u,p)).isEmpty()) {
+            System.out.println("Non hai ancora effettuato ordini nello store\n");
+        } else {
+            System.out.println(getOrdiniclienti().get(RicercaClientebynamepw(u,p)));
+        }
+    }
+
+   /* public void StoricoOrdini(){
         if (getOrdiniclienti().get(getListaclienti().get(0)).isEmpty()) {
             System.out.println("Non hai ancora effettuato ordini nello store\n");
         } else {
             System.out.println(getOrdiniclienti().get(getListaclienti().get(0)));
         }
-    }
+    }*/
 
     public void StampaAgevolazioni(){
         if(agevolazioni.isEmpty()){
@@ -1352,27 +1415,7 @@ public class Store432Frequency implements Serializable{
     }
 
 
-    public boolean cercaUser(LinkedList<Cliente> l, String usr){
-        Iterator<Cliente> it=l.iterator();
-        Cliente c;
-        while(it.hasNext()){
-            c= it.next();
-            if(c.getUsername().equalsIgnoreCase(usr)){
-                return true;
-            }
-        }
-        return false;
-    }
-    public void Registrazione(Cliente c) {
 
-            if (cercaUser(listaclienti,c.getUsername())) {
-              System.out.println("\nCliente presente nel sistema!\n");
-            } else {
-                listaclienti.add(c);
-                System.out.println("\nCliente inserito correttamente\n");
-
-            }
-        }
 
     public void caricaClientiFile(){
         try {

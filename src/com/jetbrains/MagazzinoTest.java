@@ -40,8 +40,5 @@ class MagazzinoTest {
 
     }
 
-    @Test
-    void ricercaArticoloMag() {
 
-    }
 }

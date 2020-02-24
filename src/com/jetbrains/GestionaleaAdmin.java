@@ -97,7 +97,7 @@ public class GestionaleaAdmin {
                                             break;
 
                                         case 1:
-                                            sistema.VisualizzaAna(); //in tali metodi sono presenti
+                                            sistema.VisualizzaAna(); //in tali metodi sono presenti gli input per l'inserimento
                                             break;
 
                                         case 2:
@@ -232,7 +232,6 @@ public class GestionaleaAdmin {
                                                 System.out.println("Inserisci codice fiscale del cliente da eliminare\n");
                                                 System.out.println(">");
                                                 Scanner cf = new Scanner(System.in);
-                                                //String sc = new Scanner(System.in);
                                                 cl.setCf(cf.nextLine());
                                                 System.out.println(sistema.Eliminacliente(cl));
 
@@ -248,33 +247,32 @@ public class GestionaleaAdmin {
                                 /////EFFETTUA ORDINE FORNITORE
                                 Scanner in = new Scanner(System.in);
                                 System.out.println("Inserisci il nome società del fornitore verso cui effettuare un ordine\n");
-                                Fornitore f = new Fornitore();
-                                String scforn = in.nextLine();
-                                f.setNomeSocieta(scforn);
-                                Ordine ordine;
-                                if (sistema.RicercaFornByName(f).isEmpty()) {
-                                    System.out.println("Fornitore non trovato. Impossibile effettuare un ordine\n");
+                                String nomesoc = in.nextLine();
+                                Fornitore f = sistema.RicercaFornOrdine(nomesoc);
 
-                                } else {
-                                    System.out.println(sistema.RicercaFornByName(f));
-                                    System.out.println("Inserisci la partita IVA del fornitore verso cui effettuare un ordine\n");
-                                    scforn = in.nextLine();
-                                    f = sistema.RicercaFornByIva(scforn);
                                     if (f == null) {
                                         System.out.println("Partita IVA non trovata\n");
                                     } else {
-                                        ordine = sistema.effettuaOrdineFornitore();
-                                        if (ordine.getArtOrd().isEmpty()) {
-                                            System.out.println("\nPer effettuare l'ordine bisogna inserire almeno un articolo\n");
-                                        } else {
-                                            LinkedList<Ordine> listord = sistema.getOrdinifornitori().get(f);
-                                            listord.add(ordine);
-                                            sistema.getOrdinifornitori().put(f, listord);
-                                            System.out.println("\nOrdine effettuato con successo\n");
-                                        }
-                                    }
+                                        Ordine ordine = sistema.creaOrdine();
+                                        int uscita;
+                                        Scanner i = new Scanner(System.in);
+                                        do{
+                                            System.out.println("\n1)Inserisci articolo\n"+
+                                                                 "0)Concludi ordine\n>");
+                                            uscita = i.nextInt();
+                                            switch (uscita){
+                                                case 0:
+                                                    sistema.ConcludiOrdine(ordine,f);
+                                                    break;
 
-                                }
+                                                case 1:
+                                                    ordine = sistema.inserisciArtOrdine(ordine);
+                                                    break;
+                                            }
+
+                                        }while(uscita!=0);
+
+                                    }
                                 break;
 
                             case 6:
@@ -347,18 +345,7 @@ public class GestionaleaAdmin {
                                             sistema.StampaAgevolazioni();
                                             System.out.println("Inserisci chiave dell'agevolazione da modificare:\n");
                                             int k2 = ag5.nextInt();
-                                            Agevolazione agmod = sistema.RicercaAgbykey(k2);
-                                            sistema.getAgevolazioni().remove(k2);
-                                            if(agmod!=null){
-                                                System.out.println("Modifica descrizione:\n");
-                                                String agdesc = ag7.nextLine();
-                                                agmod.setDescrizione(agdesc);
-                                                System.out.println("Modifica sconto:\n");
-                                                int agsconto = ag6.nextInt();
-                                                agmod.setSconto(agsconto);
-                                                sistema.InserisciAgevolazione(k2,agmod);
-                                            }
-
+                                            sistema.ModificaAgevolazione(k2);
                                             break;
 
                                         case 4:
@@ -366,7 +353,6 @@ public class GestionaleaAdmin {
                                             //ELIMINA AGEVOLAZIONE
                                             System.out.println("Inserisci chiave dell'agevolazione da eliminare:\n");
                                             int k1 = ag4.nextInt();
-                                            //System.out.println(sistema.RicercaAgbykey(k1));
                                             sistema.EliminaAgevolazione(k1);
 
                                             break;
@@ -381,10 +367,7 @@ public class GestionaleaAdmin {
                                             }
                                             else
                                             System.out.println(sistema.RicercaAgbyDesc(desc));
-                                        /*    System.out.println("Inserisci chiave dell'agevolazione da ricercare:\n");
-                                            int k1 = ag2.nextInt();
-                                            System.out.println(sistema.RicercaAgbykey(k1));
-                                            */
+
                                             break;
 
 
@@ -491,7 +474,6 @@ public class GestionaleaAdmin {
                                                                System.out.println("\nNon sono presenti articoli che soddisfano la tua ricerca");
                                                            } else
                                                                System.out.println(catalogo1);
-                                                           //sistema.VisualizzaMagazzino();
                                                            break;
 
                                                        case 2:
@@ -518,7 +500,7 @@ public class GestionaleaAdmin {
                                                            break;
                                                    }
                                                } while (scelta_int1 != 0);
-                                               //sistema.VisualizzaMagazzino();
+
                                                break;
 
                                            case 2:
@@ -531,52 +513,22 @@ public class GestionaleaAdmin {
                                                    System.out.println("\nImpossibile effettuare un ordine. Carrello vuoto\n ");
 
                                                } else {
-                                                   int sconto = sistema.getAgevolazioni().get(sistema.RicercaClientebynamepw(scliente,pcliente).getId()).getSconto();
-                                                   System.out.println("Il tuo carrello, a seguito dell'agevolazione (sconto del "+sconto +"%)"+" è:\n");
-                                                   double stampaprezzo = sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()-sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()*sconto/100;
+                                                   double stampaprezzo = sistema.calcolaTotaleScontato(scliente, pcliente);
+                                                   System.out.println("Il tuo ordine è di: ");
 
-                                                   //stampa carrello agevolato
                                                    System.out.println(stampaprezzo);
-
-
-                                                   //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().stampaCarrello();
-                                                   //il carrello qui è quello nuovo
-                                                   //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().stampaCarrello();
-
-
 
                                                    do {
 
 
                                                        System.out.println("\nConfermi di procedere con l'ordine?\n" +
-                                                               "1)Conferma\n" +
-                                                               "2)Annulla\n>");
+                                                                          "1)Conferma\n" +
+                                                                          "2)Annulla\n>");
                                                        conferma = in2.nextInt();
                                                        switch (conferma) {
                                                            case 1:
-                                                               sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().setTotale(sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale() -
-                                                                       sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()*sconto/100);
-                                                               ordine = sistema.effettuaOrdineCliente(sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello(), sistema.getMagazzino());
-                                                               if (ordine.getArtOrd().isEmpty()) {
-                                                                   System.out.println("\nGli articoli nel tuo carrello non sono disponibili per effettuare l'ordine\n");
-                                                               } else {
-                                                                   Random r = new Random();
-                                                                   Calendar cal = Calendar.getInstance();
-                                                                   String data = String.valueOf(cal.get(Calendar.DATE)) + "/" +String.valueOf(cal.get(Calendar.MONTH) + 1) + "/" + String.valueOf(cal.get(Calendar.YEAR));
-                                                                   ordine.setData(data);
-                                                                   ordine.setId(r.nextInt(10000));
-                                                                   //System.out.println(sistema.getListaclienti().getFirst());
-                                                                   //System.out.println(sistema.getOrdiniclienti().get(sistema.getListaclienti().get(0)));
-                                                                   //System.out.println(sistema.getOrdiniclienti());
-                                                                   listord = sistema.getOrdiniclienti().get(sistema.RicercaClientebynamepw(scliente,pcliente));
-                                                                   listord.add(ordine);
-                                                                   sistema.getOrdiniclienti().put(sistema.RicercaClientebynamepw(scliente,pcliente), listord);
-                                                                   System.out.println("Il tuo ordine è stato effettuato\n");
-                                                                   sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().setTotale(0);
-                                                                   //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().stampaCarrello();
+                                                               sistema.concludiOrdineCliente(scliente,pcliente);
 
-
-                                                               }
                                                                break;
 
                                                            case 2:
@@ -606,16 +558,13 @@ public class GestionaleaAdmin {
 
                                                        case 1:
                                                            //VISUALIZZA CARRELLO
-                                                           //per la seconda iterazione considero il primo cliente della lista, poi ci sarà autenticazione
                                                            sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().stampaCarrello();
-                                                           int sconto = sistema.getAgevolazioni().get(sistema.RicercaClientebynamepw(scliente,pcliente).getId()).getSconto();
-                                                           System.out.println("Il tuo carrello, a seguito dell'agevolazione (sconto del "+sconto +"%)"+" è:");
-                                                           double stampaprezzo = sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()-sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()*sconto/100;
-                                                           //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().setTotale(sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale() -
-                                                                   //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().getTotale()*sconto/100);
-                                                           //sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().stampaCarrello();
-                                                            System.out.println(stampaprezzo);
-                                                           //VisualizzaCarrello();
+
+                                                          double prezzo_new = sistema.calcolaTotaleScontato(scliente,pcliente);
+                                                           System.out.println("Il tuo carrello, a seguito dell'agevolazione è:\n");
+
+                                                           System.out.println(prezzo_new);
+
                                                            break;
 
                                                        case 2:
@@ -629,7 +578,6 @@ public class GestionaleaAdmin {
                                                                int quantita = i2.nextInt();
                                                                sistema.RicercaClientebynamepw(scliente,pcliente).getCarrello().InserisciArtCarrello(a, quantita);
                                                            }
-                                                           //CD cd = new CD("123456","NORAH","norah jones",2000);
                                                            break;
 
                                                        case 3:
@@ -659,14 +607,9 @@ public class GestionaleaAdmin {
 
 
                                            case 4: //VISUALIZZA STORICO ORDINI
-                                               //sistema.StoricoOrdini();
-                                               //break;
-                                            if (sistema.getOrdiniclienti().get(sistema.RicercaClientebynamepw(scliente,pcliente)).isEmpty()) {
-                                                System.out.println("Non hai ancora effettuato ordini nello store\n");
-                                            } else {
-                                                System.out.println(sistema.getOrdiniclienti().get(sistema.RicercaClientebynamepw(scliente,pcliente)));
-                                                break;
-                                            }
+                                               sistema.VisualizzaOrdini(scliente,pcliente);
+                                               break;
+
 
                                        }
                                    } while (scelta_int != 0);

@@ -40,7 +40,5 @@ class AnaArticoliTest {
         assertEquals(mappareturn,anagrafica.RicercaArtbyName("flauto"));
     }
 
-    @Test
-    void eliminaArticoloAna() {
-    }
+
 }
