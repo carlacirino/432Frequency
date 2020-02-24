@@ -1,11 +1,15 @@
 # 432FrequencyStore
 
 Per accedere all'area gestionale:
+
 username: admin
+
 password: 1234
 
 Per accedere all'area e-commerce è presente un utente di default:
+
 username: carla.ciri
+
 password: dodo
 
 Altrimenti è prevista una fase di registrazione. 
